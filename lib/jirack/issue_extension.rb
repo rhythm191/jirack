@@ -12,6 +12,10 @@ module Jirack
       self.customfield_10004.to_i
     end
 
+    def key_id
+      self.key.split('-')[1].to_i
+    end
+
     private
 
 
