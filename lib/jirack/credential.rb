@@ -33,9 +33,9 @@ module Jirack
 
     def jira_client
       client_options = {
-        :username => cred.username,
-        :password => cred.password,
-        :site     => cred.domain,
+        :username => @username,
+        :password => @password,
+        :site     => @domain,
         :context_path => '',
         :auth_type => :basic,
         :read_timeout => 120
