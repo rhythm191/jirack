@@ -3,7 +3,7 @@ require 'jirack'
 require 'jira-ruby'
 
 module Jirack
-  module StatusExtention
+  module StatusClassExtention
     WORK_FLOW_STATUS_IDS = [1, 3, 10_600, 10_603, 10_604, 10_001].freeze
 
     def work_flow_status(client, options = {})
@@ -14,4 +14,4 @@ module Jirack
 end
 
 
-JIRA::Resource::Status.send(:extend, Jirack::StatusExtention)
+JIRA::Resource::Status.send(:extend, Jirack::StatusClassExtention)

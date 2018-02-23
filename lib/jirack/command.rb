@@ -26,12 +26,13 @@ module Jirack
       cred.store
     end
 
-    desc 'list', 'show now your issue'
+    desc 'list', 'show your active issue'
+    method_option :point_only, desc: 'show only story point'
+    method_option 'sum-point',  type: :boolean, desc: 'show your all issue point'
     def list
       cred = Jirack::Credential.new
 
-
-      options = {
+      client_options = {
         :username => cred.username,
         :password => cred.password,
         :site     => cred.domain,
@@ -40,33 +41,47 @@ module Jirack
         :read_timeout => 120
       }
 
-      client = JIRA::Client.new(options)
+      client = JIRA::Client.new(client_options)
 
-      JIRA::Resource::Issue.jql(client, "project=\"#{ cred.project_name }\" AND assignee = currentuser()").take(1).each do |issue|
-        p issue
-        p issue.status
+      active_sprint =  Sprint.active_sprint(client)
 
-        puts "#{issue.id} - #{issue.summary} - #{ issue.labels}"
-
-        # puts "#{issue.sprint}"
-        puts issue.key
-        puts "#{issue.points}"
-        puts "#{issue.status.name}"
-
-        puts issue.sprint
+      if options.key?('sum-point')
+        sum_points = active_sprint_issue(client, cred.project_name, active_sprint.name).inject(0.0) {|sum, issue| sum + issue.points }
+        puts "#{ active_sprint.name } points: #{ sum_points }"
       end
 
-      JIRA::Resource::Issue.jql(client, "key=\"#{ cred.project_name }-3390\"").each do |issue|
+      # JIRA::Resource::Issue.jql(client, "project=\"#{ cred.project_name }\" AND assignee = currentuser()").take(1).each do |issue|
+      #   p issue
+      #   p issue.status
+      #
+      #   puts "#{issue.id} - #{issue.summary} - #{ issue.labels}"
+      #
+      #   # puts "#{issue.sprint}"
+      #   puts issue.key
+      #   puts "#{issue.points}"
+      #   puts "#{issue.status.name}"
+      #
+      #   puts issue.sprint
+      # end
+      #
+      # JIRA::Resource::Issue.jql(client, "key=\"#{ cred.project_name }-3390\"").each do |issue|
+      #
+      #   puts issue.key
+      #   puts "#{issue.status.name}"
+      #   puts issue.sprint
+      #   puts issue.status
+      # end
+      #
+      # JIRA::Resource::Status.work_flow_status(client).each do |status_category|
+      #   puts status_category.name
+      # end
+    end
 
-        puts issue.key
-        puts "#{issue.status.name}"
-        puts issue.sprint
-        puts issue.status
-      end
 
-      JIRA::Resource::Status.work_flow_status(client).each do |status_category|
-        puts status_category.name
-      end
+    private
+
+    def active_sprint_issue(client, project_name, sprint_name)
+      JIRA::Resource::Issue.jql(client, "project=\"#{ project_name }\" AND assignee = currentuser() AND cf[10007] = \"#{ sprint_name }\"")
     end
   end
 end
