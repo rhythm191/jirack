@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+
+# require "rubygems"
+# jirack_gemspec = Gem::Specification.load(File.expand_path("../../jirack.gemspec", __FILE__))
+# jirack_gemspec.instance_variable_set(:@full_gem_path, File.expand_path("../..", __FILE__))
+# jirack_gemspec.activate if jirack_gemspec.respond_to?(:activate)
+load File.expand_path("../../exe/jirack", __FILE__)
