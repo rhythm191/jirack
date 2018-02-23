@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'json'
+require 'jira-ruby'
 
 module Jirack
   class Credential
@@ -28,6 +29,19 @@ module Jirack
       File.open(File.expand_path(CREDENTIAL_FILE_PATH), 'w', 0600) do |file|
         file.puts self.to_json
       end
+    end
+
+    def jira_client
+      client_options = {
+        :username => cred.username,
+        :password => cred.password,
+        :site     => cred.domain,
+        :context_path => '',
+        :auth_type => :basic,
+        :read_timeout => 120
+      }
+
+      JIRA::Client.new(client_options)
     end
   end
 end

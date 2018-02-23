@@ -30,17 +30,7 @@ module Jirack
     method_option 'sum-point',  type: :boolean, desc: 'show your all issue point'
     def list
       cred = Jirack::Credential.new
-
-      client_options = {
-        :username => cred.username,
-        :password => cred.password,
-        :site     => cred.domain,
-        :context_path => '',
-        :auth_type => :basic,
-        :read_timeout => 120
-      }
-
-      client = JIRA::Client.new(client_options)
+      client = cred.jira_client
 
       active_sprint =  Sprint.active_sprint(client)
 
