@@ -14,7 +14,7 @@ module Jirack
         json = open(File.expand_path(filename)) {|io| JSON.load(io) }
         @username = json['username']
         @domain = json['domain']
-        @project_name = json['project_name'].upcase
+        @project_name = json['project_name']
         @password = json['password']
       end
     end
