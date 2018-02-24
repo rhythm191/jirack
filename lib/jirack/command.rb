@@ -2,6 +2,7 @@
 require 'jirack'
 require 'thor'
 require 'jira-ruby'
+require 'slack/incoming/webhooks'
 
 module Jirack
   class Command < Thor
@@ -23,6 +24,11 @@ module Jirack
       password = ask '(required!)input password:', echo: false
       cred.password = password
 
+      puts ''
+
+      slack_webhook_url = ask "input slack webhook urk #{ cred.slack_webhook_url&.empty? ? '' : "(#{cred.slack_webhook_url})" }:"
+      cred.slack_webhook_url = slack_webhook_url unless slack_webhook_url.empty?
+
       cred.store
     end
 
@@ -40,17 +46,18 @@ module Jirack
       else
         puts "#{ active_sprint['name'] } issues: "
         active_sprint_issue(client, cred.project_name, active_sprint['name']).each do |issue|
-          puts "#{ issue.key }: #{ issue.summary } [#{ issue.points }] #{ issue.status.name } "
+          puts "#{ issue.key }: #{ issue.summary }(#{issue.id}) [#{ issue.points }] #{ issue.status.name } "
         end
       end
     end
 
     desc 'forward issue_number', 'forward issue status'
+    method_option 'message',  :aliases => '-m', desc: 'notify slack message'
     def forward(issue_number)
       cred = Jirack::Credential.new
       client = cred.jira_client
 
-      issue = client.Issue.find("#{ cred.project_name}-#{issue_number}", { extend: 'transitions' })
+      issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }", { extend: 'transitions' })
 
       next_status = issue.status.next_status(client)
 
@@ -58,14 +65,22 @@ module Jirack
 
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
+
+      if options.key? :message
+        slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
+        slack.post "<@#{ issue.reporter.name }> #{ options[:message] }"
+      end
+
+      puts "#{ cred.project_name }-#{ issue_number } forward to #{ next_transition.to.name }"
     end
 
     desc 'back issue_number', 'back issue status'
+    method_option 'message',  :aliases => '-m', desc: 'notify slack message'
     def back(issue_number)
       cred = Jirack::Credential.new
       client = cred.jira_client
 
-      issue = client.Issue.find("#{ cred.project_name}-#{issue_number}", { extend: 'transitions' })
+      issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }", { extend: 'transitions' })
 
       next_status = issue.status.next_status(client)
 
@@ -73,6 +88,13 @@ module Jirack
 
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
+
+      if options.key? :message
+        slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
+        slack.post "<@#{ issue.reporter.name }> #{ options[:message] }"
+      end
+
+      puts "#{ cred.project_name }-#{ issue_number } back to #{ next_transition.to.name }"
     end
 
 

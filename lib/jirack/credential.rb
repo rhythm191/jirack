@@ -5,7 +5,7 @@ require 'jira-ruby'
 module Jirack
   class Credential
 
-    attr_accessor :username, :domain, :project_name, :password
+    attr_accessor :username, :domain, :project_name, :password, :slack_webhook_url
 
     CREDENTIAL_FILE_PATH = '~/.jirack'
 
@@ -16,6 +16,7 @@ module Jirack
         @domain = json['domain']
         @project_name = json['project_name']
         @password = json['password']
+        @slack_webhook_url = json['slack_webhook_url']
       end
     end
 
