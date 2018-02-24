@@ -4,7 +4,7 @@ require 'jira-ruby'
 
 module Jirack
   module StatusClassExtension
-    WORK_FLOW_STATUS_IDS = [1, 3, 10_600, 10_603, 10_604, 10_001].freeze
+    WORK_FLOW_STATUS_IDS = [1, 3, 10_603, 10_600, 10_604, 10_001].freeze
 
     def work_flow_status(client, options = {})
       status_list = all(client, options)
@@ -20,7 +20,7 @@ module Jirack
 
       return if index + 1 == StatusClassExtension::WORK_FLOW_STATUS_IDS.size
 
-      JIRA::Resource::Status.all(client).find {|status| status.id.to_i == StatusClassExtension::WORK_FLOW_STATUS_IDS[index + 1] }
+      client.Status.all.find {|status| status.id.to_i == StatusClassExtension::WORK_FLOW_STATUS_IDS[index + 1] }
     end
   end
 end

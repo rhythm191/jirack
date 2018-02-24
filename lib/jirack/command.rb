@@ -50,35 +50,14 @@ module Jirack
       cred = Jirack::Credential.new
       client = cred.jira_client
 
-      # issue = JIRA::Resource::Issue.find(client, "#{ cred.project_name}-#{issue_number}", { extend: 'transitions' })
-
       issue = client.Issue.find("#{ cred.project_name}-#{issue_number}", { extend: 'transitions' })
 
+      next_status = issue.status.next_status(client)
 
-      p issue
+      next_transition =  issue.transitions.all.find {|transition| transition.to.id == next_status.id }
 
-      puts client.Agile.all['values']
-
-      board = client.Agile.all['values'].find {|board| board['name'] == cred.project_name }
-
-      p client.Agile.get_sprints(board['id'].to_i, state: 'active')
-
-      p client.Sprint.find(138)
-
-      # transition = JIRA::Resource::Transition.new(client, :attrs => {id: '21'}, :issue_id => issue.id)
-      # transition.save(transition: { id: '21' })
-
-
-      # response = client.post('/rest/api/2/issue/34059/transitions', '{ "transition": {"id": "21" } }')
-      # p response
-
-      # p issue.status.name
-      # p issue.status.next_status(client).name
-      # p issue.id
-      # issue.belongs_to issue.status.next_status(client)
-      #
-      # udpate_issue = JIRA::Resource::Issue.find(client, "#{ cred.project_name}-#{issue_number}")
-      # p udpate_issue.status.name
+      transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
+      transition.save(transition: { id: next_transition.id })
     end
 
 
