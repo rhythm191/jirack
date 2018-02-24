@@ -45,8 +45,8 @@ module Jirack
       end
     end
 
-    desc 'proceed issue_number', 'update issue status'
-    def proceed(issue_number)
+    desc 'forward issue_number', 'forward issue status'
+    def forward(issue_number)
       cred = Jirack::Credential.new
       client = cred.jira_client
 
@@ -55,6 +55,21 @@ module Jirack
       next_status = issue.status.next_status(client)
 
       next_transition =  issue.transitions.all.find {|transition| transition.to.id == next_status.id }
+
+      transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
+      transition.save(transition: { id: next_transition.id })
+    end
+
+    desc 'back issue_number', 'back issue status'
+    def back(issue_number)
+      cred = Jirack::Credential.new
+      client = cred.jira_client
+
+      issue = client.Issue.find("#{ cred.project_name}-#{issue_number}", { extend: 'transitions' })
+
+      next_status = issue.status.next_status(client)
+
+      next_transition =  issue.transitions.all.find {|transition| transition.to.id != next_status.id }
 
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
