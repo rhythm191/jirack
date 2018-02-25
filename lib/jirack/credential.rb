@@ -5,7 +5,7 @@ require 'jira-ruby'
 module Jirack
   class Credential
 
-    attr_accessor :username, :domain, :project_name, :password, :slack_webhook_url
+    attr_accessor :username, :host, :project_name, :password, :slack_webhook_url
 
     CREDENTIAL_FILE_PATH = '~/.jirack'
 
@@ -13,7 +13,7 @@ module Jirack
       if File.exists?(File.expand_path(filename))
         json = open(File.expand_path(filename)) {|io| JSON.load(io) }
         @username = json['username']
-        @domain = json['domain']
+        @host = json['host']
         @project_name = json['project_name']
         @password = json['password']
         @slack_webhook_url = json['slack_webhook_url']
@@ -32,11 +32,15 @@ module Jirack
       end
     end
 
+    def domain
+      "https://#{ @host }"
+    end
+
     def jira_client
       client_options = {
         :username => @username,
         :password => @password,
-        :site     => @domain,
+        :site     => domain,
         :context_path => '',
         :auth_type => :basic,
         :read_timeout => 120

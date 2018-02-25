@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'jirack'
 require 'thor'
+require 'uri'
 require 'jira-ruby'
 require 'slack/incoming/webhooks'
 
@@ -12,8 +13,8 @@ module Jirack
       cred = Jirack::Credential.new
 
 
-      domain = ask "input domain (ex. 'http://mydomain.atlassian.net/') #{ cred.domain&.empty? ? '' : "(#{cred.domain})" }:"
-      cred.domain = domain unless domain.empty?
+      host = ask "input host (ex. 'mydomain.atlassian.net') #{ cred.host&.empty? ? '' : "(#{cred.host})" }:"
+      cred.host = host unless host.empty?
 
       project_name = ask "input project name #{ cred.project_name&.empty? ? '' : "(#{cred.project_name})" }:"
       cred.project_name = project_name unless project_name.empty?
@@ -66,9 +67,10 @@ module Jirack
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
 
+      # slack に通知
       if options.key? :message
         slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
-        slack.post "<@#{ issue.reporter.name }> #{ options[:message] }"
+        slack.post "<@#{ issue.reporter.name }> #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
       end
 
       puts "#{ cred.project_name }-#{ issue_number } forward to #{ next_transition.to.name }"
@@ -89,14 +91,14 @@ module Jirack
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
 
+      # slack に通知
       if options.key? :message
         slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
-        slack.post "<@#{ issue.reporter.name }> #{ options[:message] }"
+        slack.post "<@#{ issue.reporter.name }> #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
       end
 
       puts "#{ cred.project_name }-#{ issue_number } back to #{ next_transition.to.name }"
     end
-
 
     private
 
@@ -110,6 +112,11 @@ module Jirack
 
     def active_sprint_issue(client, project_name, sprint_name)
       JIRA::Resource::Issue.jql(client, "project=\"#{ project_name }\" AND assignee = currentuser() AND cf[10007] = \"#{ sprint_name }\"")
+    end
+
+    def issue_url(issue)
+      uri = URI.parse(issue.self)
+      "https://#{ uri.host }/browse/#{ issue.key }"
     end
   end
 end
