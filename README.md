@@ -45,6 +45,11 @@ install it yourself as:
     $ jirack back 9999 -m "release has been completed"
 
 
+slackにメッセージだけを送る。(ex. チケット9999についてのメッセージを送る)
+
+    $ jirack notify 9999 -m "something message"
+
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

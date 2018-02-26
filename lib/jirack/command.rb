@@ -100,6 +100,23 @@ module Jirack
       puts "#{ cred.project_name }-#{ issue_number } back to #{ next_transition.to.name }"
     end
 
+    desc 'notify issue_number', 'notify issue message'
+    method_option 'message',  :aliases => '-m', required: true, desc: 'notify slack message'
+    def notify(issue_number)
+      cred = Jirack::Credential.new
+      client = cred.jira_client
+
+      issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }")
+
+      # slack に通知
+      if options.key? :message
+        slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
+        slack.post "<@#{ issue.reporter.name }> #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
+      end
+
+      puts "#{ cred.project_name }-#{ issue_number } notify slack"
+    end
+
     private
 
     def project_board(client, project_name)
