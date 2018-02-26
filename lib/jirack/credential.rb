@@ -5,7 +5,7 @@ require 'jira-ruby'
 module Jirack
   class Credential
 
-    attr_accessor :username, :host, :project_name, :password, :slack_webhook_url
+    attr_accessor :username, :host, :project_name, :password, :slack_webhook_url, :workflow_ids
 
     CREDENTIAL_FILE_PATH = '~/.jirack'
 
@@ -15,6 +15,7 @@ module Jirack
         @username = json['username']
         @host = json['host']
         @project_name = json['project_name']
+        @workflow_ids = json['workflow_ids']
         @password = json['password']
         @slack_webhook_url = json['slack_webhook_url']
       end
@@ -23,6 +24,7 @@ module Jirack
     def to_json
       hash = {}
       instance_variables.each {|var| hash[var.to_s.delete('@')] = instance_variable_get(var) }
+      hash['workflow_ids'] = [1, 3, 10_603, 10_600, 10_604, 10_001]
       hash.to_json
     end
 

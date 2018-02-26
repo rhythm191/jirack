@@ -60,7 +60,7 @@ module Jirack
 
       issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }", { extend: 'transitions' })
 
-      next_status = issue.status.next_status(client)
+      next_status = issue.status.next_status(client, cred.workflow_ids)
 
       next_transition =  issue.transitions.all.find {|transition| transition.to.id == next_status.id }
 
@@ -84,7 +84,7 @@ module Jirack
 
       issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }", { extend: 'transitions' })
 
-      next_status = issue.status.next_status(client)
+      next_status = issue.status.next_status(client, cred.workflow_ids)
 
       next_transition =  issue.transitions.all.find {|transition| transition.to.id != next_status.id }
 
