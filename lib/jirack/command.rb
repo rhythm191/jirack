@@ -4,6 +4,7 @@ require 'thor'
 require 'uri'
 require 'jira-ruby'
 require 'slack/incoming/webhooks'
+require 'launchy'
 
 module Jirack
   class Command < Thor
@@ -115,6 +116,16 @@ module Jirack
       end
 
       puts "#{ cred.project_name }-#{ issue_number } notify slack"
+    end
+
+    desc 'open issue_number', 'open browser issue page'
+    def open(issue_number)
+      cred = Jirack::Credential.new
+      client = cred.jira_client
+
+      issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }")
+
+      Launchy.open issue_url(issue)
     end
 
     private

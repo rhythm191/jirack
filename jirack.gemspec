@@ -37,5 +37,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'thor'
   spec.add_dependency 'jira-ruby'
   spec.add_dependency 'slack-incoming-webhooks'
+  spec.add_dependency 'launchy'
+
 
 end
