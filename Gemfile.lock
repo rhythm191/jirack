@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jirack (0.1.2)
+    jirack (0.2.0)
       jira-ruby
       launchy
       slack-incoming-webhooks

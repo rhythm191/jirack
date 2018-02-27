@@ -28,6 +28,10 @@ install it yourself as:
 
     $ jirack list --sum-point
     
+
+未割り当てのissueを確認する。
+
+    $ jirack list --unassign
     
 チケットをステータスを前に進める。(ex. チケット9999を次のステータスにする)
 `-m message`でslackにメッセージを通知する。
@@ -53,6 +57,17 @@ slackにメッセージだけを送る。(ex. チケット9999についてのメ
 チケットのページをブラウザで開く
 
     $ jirack open 9999
+
+
+チケットを自分にアサインしたい
+
+    $ jirack assign 9999
+
+
+分からなくなったら、
+
+    $ jirack help
+    $ jirack help list
 
 
 ## Development

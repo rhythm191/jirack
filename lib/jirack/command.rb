@@ -132,6 +132,19 @@ module Jirack
       issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }")
 
       Launchy.open issue_url(issue)
+
+    end
+
+    desc 'assign issue_number', 'assign issue to you'
+    def assign(issue_number)
+      cred = Jirack::Credential.new
+      client = cred.jira_client
+
+      issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }")
+
+      myself = JIRA::Resource::UserFactory.new(client).myself
+
+      client.put("/rest/api/2/issue/#{ issue.key }/assignee", { name: myself.name }.to_json)
     end
 
     private
