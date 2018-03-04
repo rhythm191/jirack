@@ -89,9 +89,8 @@ module Jirack
       if options.key? :message
         slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
         slack.post "<@#{ issue.reporter.name }> #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
+        puts "@#{ issue.reporter.name } #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
       end
-
-      puts "#{ cred.project_name }-#{ issue_number } forward to #{ next_transition.to.name }"
     end
 
     desc 'back issue_number', 'back issue status'
@@ -109,16 +108,18 @@ module Jirack
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
 
+      puts "#{ cred.project_name }-#{ issue_number } back to #{ next_transition.to.name }"
+
       # slack に通知
       if options.key? :message
         slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
         slack.post "<@#{ issue.reporter.name }> #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
+        puts "@#{ issue.reporter.name } #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
       end
-
-      puts "#{ cred.project_name }-#{ issue_number } back to #{ next_transition.to.name }"
     end
 
     desc 'notify issue_number', 'notify issue message'
+    method_option 'silent',  :aliases => '-s', type: :boolean, desc: 'not notify slack '
     method_option 'message',  :aliases => '-m', required: true, desc: 'notify slack message'
     def notify(issue_number)
       cred = Jirack::Credential.new
@@ -127,12 +128,12 @@ module Jirack
       issue = client.Issue.find("#{ cred.project_name }-#{ issue_number }")
 
       # slack に通知
-      if options.key? :message
+      if options.key?(:message) && !options.key?(:silent)
         slack = Slack::Incoming::Webhooks.new cred.slack_webhook_url
         slack.post "<@#{ issue.reporter.name }> #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
       end
 
-      puts "#{ cred.project_name }-#{ issue_number } notify slack"
+      puts "@#{ issue.reporter.name } #{ issue.summary }(#{ issue_url(issue) }) #{ options[:message] }"
     end
 
     desc 'open issue_number', 'open browser issue page'
