@@ -35,7 +35,8 @@ module Jirack
     end
 
     desc 'list', 'show your active issue'
-    method_option 'unassign', type: :boolean, aliases: '-u', desc: 'show your all issue point'
+    method_option 'all', type: :boolean, aliases: '-a', desc: 'show all issue'
+    method_option 'unassign', type: :boolean, aliases: '-u', desc: 'show all unassign issue'
     method_option 'sum-point', type: :boolean, aliases: '-n', desc: 'show your all issue point'
     def list
       cred = Jirack::Credential.new
@@ -46,15 +47,22 @@ module Jirack
       if options.key?('unassign')
         puts "#{ active_sprint['name'] } unassign issues: "
         active_unassign_issue(client, cred.project_name, active_sprint['name']).each do |issue|
-          puts "#{ issue.key }: #{ issue.summary }(#{issue.id}) [#{ issue.points }] #{ issue.status.name } "
+          puts "%s %s %4.1f %s" % [issue.key, mb_rjust(issue.status.name, 25), issue.points, issue.summary]
         end
+
       elsif options.key?('sum-point')
         sum_points = active_assign_issue(client, cred.project_name, active_sprint['name']).inject(0.0) {|sum, issue| sum + issue.points }
         puts "#{ active_sprint['name'] } points: #{ sum_points }"
+
+      elsif options.key?('all')
+        puts "#{ active_sprint['name'] } issues: "
+        active_sprint_issue(client, cred.project_name, active_sprint['name']).each do |issue|
+          puts "%s % 18s %s %4.1f %s" % [issue.key, issue.assign_user_name, mb_rjust(issue.status.name, 25), issue.points, issue.summary]
+        end
       else
         puts "#{ active_sprint['name'] } issues: "
         active_assign_issue(client, cred.project_name, active_sprint['name']).each do |issue|
-          puts "#{ issue.key }: #{ issue.summary }(#{issue.id}) [#{ issue.points }] #{ issue.status.name } "
+          puts "%s %s %4.1f %s" % [issue.key, mb_rjust(issue.status.name, 25), issue.points, issue.summary]
         end
       end
     end
@@ -73,6 +81,9 @@ module Jirack
 
       transition = JIRA::Resource::Transition.new(client, :attrs => {id: next_transition.id }, :issue_id => issue.id)
       transition.save(transition: { id: next_transition.id })
+
+
+      puts "#{ cred.project_name }-#{ issue_number } forward to #{ next_transition.to.name }"
 
       # slack に通知
       if options.key? :message
@@ -165,9 +176,19 @@ module Jirack
       JIRA::Resource::Issue.jql(client, "project=\"#{ project_name }\" AND assignee = NULL AND cf[10007] = \"#{ sprint_name }\"")
     end
 
+    def active_sprint_issue(client, project_name, sprint_name)
+      JIRA::Resource::Issue.jql(client, "project=\"#{ project_name }\" AND cf[10007] = \"#{ sprint_name }\" ORDER BY assignee")
+    end
+
     def issue_url(issue)
       uri = URI.parse(issue.self)
       "https://#{ uri.host }/browse/#{ issue.key }"
+    end
+
+    def mb_rjust(string, width, padding=' ')
+      output_width = string.each_char.map{|c| c.bytesize == 1 ? 1 : 2}.reduce(0, &:+)
+      padding_size = [0, width - output_width].max
+      padding * padding_size + string
     end
   end
 end

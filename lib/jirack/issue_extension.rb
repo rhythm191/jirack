@@ -16,6 +16,11 @@ module Jirack
       self.key.split('-')[1].to_i
     end
 
+    def assign_user_name
+      self.assignee&.name&.split('@')&.first
+    end
+
+
     private
 
 
