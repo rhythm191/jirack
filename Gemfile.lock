@@ -45,7 +45,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.7.0)
     rspec-support (3.7.1)
-    slack-incoming-webhooks (0.2.0)
+    slack-incoming-webhooks (0.3.0)
     thor (0.20.0)
     thread_safe (0.3.6)
     tzinfo (1.2.5)
