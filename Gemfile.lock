@@ -31,7 +31,7 @@ GEM
     multipart-post (2.0.0)
     oauth (0.5.4)
     public_suffix (3.0.2)
-    rake (10.5.0)
+    rake (13.0.4)
     rspec (3.7.0)
       rspec-core (~> 3.7.0)
       rspec-expectations (~> 3.7.0)
@@ -57,7 +57,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 1.16)
   jirack!
-  rake (~> 10.0)
+  rake (~> 13.0)
   rspec (~> 3.0)
 
 BUNDLED WITH
